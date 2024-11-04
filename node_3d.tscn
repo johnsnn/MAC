@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://4w1tvvooioxn"]
+
+[ext_resource type="PackedScene" uid="uid://d1mos2c2q4jti" path="res://world_environment.tscn" id="1_uy1ok"]
+[ext_resource type="Script" path="res://controllers/scripts/fps_controller.gd" id="1_v14ml"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bwqqu"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_qqh2q"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_rlv0v"]
+size = Vector2(50, 50)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_pwim0"]
+data = PackedVector3Array(25, 0, 25, -25, 0, 25, 25, 0, -25, -25, 0, 25, -25, 0, -25, 25, 0, -25)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" parent="." instance=ExtResource("1_uy1ok")]
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+script = ExtResource("1_v14ml")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_bwqqu")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D/CollisionShape3D"]
+mesh = SubResource("CapsuleMesh_qqh2q")
+
+[node name="Head" type="Node3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CharacterBody3D/Head"]
+
+[node name="ReflectionProbe" type="ReflectionProbe" parent="CharacterBody3D/Head/Camera3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_rlv0v")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_pwim0")
