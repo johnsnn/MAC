@@ -1,11 +1,12 @@
-extends CharacterBody3D
+extends RigidBody3D
 
-@export var SPEED : float = 5.0
+@export var SPEED = 1
 @export var JUMP_VELOCITY : float = 4.5
 @export var MOUSE_SENSITIVITY : float = 0.25
 @export var TILT_LOWER_LIMIT := deg_to_rad(-90.0)
 @export var TILT_UPPER_LIMIT := deg_to_rad(90.0)
 @onready var CAMERA_CONTROLLER : Camera3D = $Head/Camera3D
+@onready var Raycast = $RayCast3D
 
 var _mouse_input : bool = false
 var _rotation_input : float
@@ -15,7 +16,6 @@ var _player_rotation : Vector3
 var _camera_rotation : Vector3
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
-var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _unhandled_input(event: InputEvent) -> void:
 	
@@ -28,6 +28,15 @@ func _input(event):
 	
 	if event.is_action_pressed("exit"):
 		get_tree().quit()
+		
+func is_on_ground():
+		# Check if character is on the floor
+	if Raycast.is_colliding():
+		var collider = Raycast.get_collider()
+		if collider.is_in_group("ground"):
+			return true
+		else:
+			return false
 		
 func _update_camera(delta):
 	
@@ -48,34 +57,30 @@ func _update_camera(delta):
 	_tilt_input = 0.0
 	
 func _ready():
-
 	# Get mouse input
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-
+	
 func _physics_process(delta):
 	
 	# Update camera movement based on mouse movement
 	_update_camera(delta)
 	
-	# Add the gravity.
-	if not is_on_floor():
-		velocity.y -= gravity * delta
-
-	# Handle Jump.
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
-
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
+	# Moving around in the game
 	var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	
 	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	direction = direction * SPEED
+	apply_central_impulse(direction)
 	
-	if direction:
-		velocity.x = direction.x * SPEED
-		velocity.z = direction.z * SPEED
-	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		velocity.z = move_toward(velocity.z, 0, SPEED)
+	# Adding jump
+	if Input.is_action_pressed("jump") and is_on_ground():
+		direction.y += 1
+		direction = direction * 1
+		apply_central_impulse(direction)
+		
+		
+		
+		
 
-	move_and_slide()
+
+
+	
